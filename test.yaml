@@ -1,0 +1,9 @@
+####this is a test####
+microservices:
+  - app: user-authentication
+    port: 9000
+    version: 1.7
+  - app: shopping cart
+    port: 9002
+    version: 1.9
+    deployed: true

@@ -1,0 +1,11 @@
+- hosts: TEST
+  become: true
+  tasks:
+    - name: install elasticsearch
+      yum: pkg=elasticsearch state=present
+
+    - name: start elasticsearch every bootup
+      service: name=elasticsearch state=started enabled=yes
+
+    - name: do something in the shell
+      shell: cp /etc/hosts /etc/hosts.orig
