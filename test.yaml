@@ -5,5 +5,5 @@ microservices:
     version: 1.7
   - app: shopping cart
     port: 9002
-    version: 1.9
-    deployed: true
+    version: 1.10
+    deployed: false
