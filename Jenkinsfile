@@ -13,12 +13,12 @@ pipeline {
                 script {
                     echo "Branch detected: ${env.BRANCH_NAME}"
 
-                    if (${env.BRANCH_NAME} == 'dev') {
-                        ${env.BRANCH_NAME} = 'dev'
-                    } else if (${env.BRANCH_NAME} == 'staging') {
-                        ${env.BRANCH_NAME} = 'staging'
-                    } else if (${env.BRANCH_NAME} == 'main') {
-                        ${env.BRANCH_NAME} = 'production'
+                    if (env.BRANCH_NAME == 'dev') {
+                        env.ENVIRONMENT = 'dev'
+                    } else if (env.BRANCH_NAME == 'staging') {
+                        env.ENVIRONMENT = 'staging'
+                    } else if (env.BRANCH_NAME == 'main') {
+                        env.ENVIRONMENT = 'production'
                     } else {
                         error "Unknown branch: ${env.BRANCH_NAME}"
                     }
@@ -32,7 +32,8 @@ pipeline {
             steps {
                 script {
                     echo "Cloning repository from ${env.REPO_URL}..."
-                    sh "git clone ${env.REPO_URL} repo"
+                    def cloneDir = "repo-${env.BRANCH_NAME}-${System.currentTimeMillis()}"
+                    sh "git clone ${env.REPO_URL} ${cloneDir}"
                 }
             }
         }
@@ -40,7 +41,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building app for ${env.ENVIRONMENT}..."
-                // Build logic here
+                // Add build commands here, e.g., sh "./build.sh"
             }
         }
 
