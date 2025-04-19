@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        ENVIRONMENT = ''
         REPO_URL = 'https://github.com/ifediniru/docker_local.git'
     }
 
@@ -14,10 +13,13 @@ pipeline {
                     echo "Branch detected: ${env.BRANCH_NAME}"
 
                     if (env.BRANCH_NAME == 'dev') {
+                        currentBuild.displayName = 'dev'
                         env.ENVIRONMENT = 'dev'
                     } else if (env.BRANCH_NAME == 'staging') {
+                        currentBuild.displayName = 'staging'
                         env.ENVIRONMENT = 'staging'
                     } else if (env.BRANCH_NAME == 'main') {
+                        currentBuild.displayName = 'production'
                         env.ENVIRONMENT = 'production'
                     } else {
                         error "Unknown branch: ${env.BRANCH_NAME}"
@@ -31,17 +33,20 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    echo "Cloning repository from ${env.REPO_URL}..."
-                    def cloneDir = "repo-${env.BRANCH_NAME}-${System.currentTimeMillis()}"
-                    sh "git clone ${env.REPO_URL} ${cloneDir}"
+                    def repoDir = "repo-${env.ENVIRONMENT}-${env.BUILD_ID}"
+                    echo "Cloning repository from ${env.REPO_URL} into ${repoDir}..."
+                    sh "git clone ${env.REPO_URL} ${repoDir}"
+                    env.REPO_DIR = repoDir
                 }
             }
         }
 
         stage('Build') {
             steps {
-                echo "Building app for ${env.ENVIRONMENT}..."
-                // Add build commands here, e.g., sh "./build.sh"
+                script {
+                    echo "Building app for ${env.ENVIRONMENT}..."
+                    // Build logic here
+                }
             }
         }
 
@@ -49,11 +54,11 @@ pipeline {
             steps {
                 script {
                     if (env.ENVIRONMENT == 'dev') {
-                        deployToDev()
+                        deployToDev(env.REPO_DIR)
                     } else if (env.ENVIRONMENT == 'staging') {
-                        deployToStaging()
+                        deployToStaging(env.REPO_DIR)
                     } else if (env.ENVIRONMENT == 'production') {
-                        deployToProduction()
+                        deployToProduction(env.REPO_DIR)
                     }
                 }
             }
@@ -70,17 +75,17 @@ pipeline {
     }
 }
 
-def deployToDev() {
+def deployToDev(repoDir) {
     echo "Deploying to Dev..."
-    sh "cd repo && ./deploy_dev.sh"
+    sh "cd ${repoDir} && ./deploy_dev.sh"
 }
 
-def deployToStaging() {
+def deployToStaging(repoDir) {
     echo "Deploying to Staging..."
-    sh "cd repo && ./deploy_staging.sh"
+    sh "cd ${repoDir} && ./deploy_staging.sh"
 }
 
-def deployToProduction() {
+def deployToProduction(repoDir) {
     echo "Deploying to Production..."
-    sh "cd repo && ./deploy_prod.sh"
+    sh "cd ${repoDir} && ./deploy_prod.sh"
 }
